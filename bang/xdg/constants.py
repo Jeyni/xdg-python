@@ -52,7 +52,7 @@ STD_ICON_EXTENSIONS = ['png', 'svg', 'xpm']
 
 
 
-def test():
+def __test__():
     print(USER_HOME)
     print(XDG_DATA_HOME)
     print(XDG_CONFIGURATION_HOME)

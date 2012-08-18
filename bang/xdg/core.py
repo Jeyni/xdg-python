@@ -269,7 +269,7 @@ class Locales(object):
 
 
 
-def test():
+def __test__():
     ini = IniFile('/usr/share/icons/Humanity/index.theme')
     for section in ini:
         print(section)
