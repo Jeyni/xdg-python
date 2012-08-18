@@ -236,3 +236,6 @@ class IconResolver(object):
                             continue
                         else:
                             return join(directory, i)
+
+def __test__():
+    pass
