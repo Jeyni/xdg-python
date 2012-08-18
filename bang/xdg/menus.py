@@ -1,8 +1,30 @@
 #!python3
-from core import XmlFile, IniFile, Renamer
-from constants import XDG_MENU_DIRECTORIES, XDG_DIRECTORY_DIRECTORIES, XDG_APPICATION_DIRECTORIES
+'''
+Copyright (c) 2012, Christopher L. Ramsey <christopherlramsey@gmx.us>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met: Redistributions of
+source code must retain the above copyright notice, this list of conditions and
+the following disclaimer. Redistributions in binary form must reproduce the
+above copyright notice, this list of conditions and the following disclaimer in
+the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+'''
+from bang.xdg.applications import DesktopEntry, get_desktop_entry_for_name
+from bang.xdg.constants import XDG_MENU_DIRECTORIES, XDG_DIRECTORY_DIRECTORIES, XDG_APPICATION_DIRECTORIES
+from bang.xdg.core import XmlFile, IniFile, Renamer
 from collections import Iterable
-from applications import DesktopEntry, get_desktop_entry_for_name
 from os.path import join, isfile, isdir, dirname, split
 from os import listdir
 from re import match
@@ -47,6 +69,9 @@ class SubMenu(Iterable):
         self.only_unallocated = False
         self.deleted = False
 
+    def load_applications(self):
+        pass
+
     def __str__(self):
         return self.name
 
@@ -62,13 +87,13 @@ class Menu(SubMenu):
         self.merge_directories = [ ]
         self.layout = None
         self.renamer = None
+        self.file_info = None
         self.xml = XmlFile(path)
-        self.path = path
         if path != None: self.parse()
 
     def parse(self, path = None):
         if path != None: self.xml.parse(path)
-        self.path = path if self.path == None else self.path
+        self.file_info = self.xml.info 
         if not self.xml.has_file: 
             raise Exception('No file is present')
         else:
@@ -145,10 +170,10 @@ class Menu(SubMenu):
                         self.temp = Menu()
                         if self.attrib == 'path' or self.attrib == ' ':
                             if not isfile(self.p):
-                                self.p = join(dirname(menu.path), self.f)    
+                                self.p = join(menu.file_info.path_name, self.f)    
                         elif self.attrib == 'parent':
                             for d in self.merge_directories:
-                                if d != dirname(menu.path) and isfile(join(d, self.f)):
+                                if d != menu.file_info.path_name and isfile(join(d, self.f)):
                                     self.p = join(d, self.f)
                         if isfile(self.p):
                             self.temp.parse(self.p)
@@ -214,6 +239,8 @@ class Menu(SubMenu):
                         menu.submenus.append(self.menu)
                         handle_menu_element(self.menu, self.xml.node_iter(element))
             handle_menu_element(self, self.xml)
+            if self.layout != None:
+                print(self.layout)
 
     def as_submenu(self, name = ' ', parent = None):
         self.temp = SubMenu(name, parent)
@@ -283,7 +310,7 @@ class DefaultLayout(MenuName, Layout):
 
 
 
-if __name__ == '__main__':
+def test():
     menu = Menu('/etc/xdg/menus/applications.menu')
     print('-------Main-------')
     print(menu.name)
