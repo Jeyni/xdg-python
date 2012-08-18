@@ -24,24 +24,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from os.path import expanduser, join
 from os import environ
 
+def _env(var = ' ', default = []):
+    try:
+        item = environ[var]
+        if ':' in item:
+            return item.split(':')
+        else:
+            return [item] if not item.isspace() else default
+    except:
+        return default
+
+
 USER_HOME = expanduser('~')
-XDG_DATA_DIRECTORIES = _env('XDG_DATA_DIRS')
-XDG_MENU_DIRECTORIES = ['/etc/xdg/menus/']
-XDG_DIRECTORY_DIRECTORIES = ['/usr/share/desktop-directories/']
-XDG_APPICATION_DIRECTORIES = ['/usr/share/applications/']
-XDG_ICON_DIRECTORIES = [join(USER_HOME,'.icons/'), '/usr/share/icons/', '/usr/share/pixmaps/']
-XDG_THEME_DIRECTORIES = [join(USER_HOME,'.themes/'), '/usr/share/themes/']
+
+XDG_DATA_HOME = _env(var = 'XDG_DATA_HOME', default = [join(USER_HOME, '.local/')])
+XDG_CONFIGURATION_HOME = _env(var = 'XDG_CONFIG_HOME', default = [join(USER_HOME, '.config/')])
+XDG_CACHE_HOME = _env(var = 'XDG_CACHE_HOME', default = [join(USER_HOME, '.cache/')])
+XDG_DATA_DIRECTORIES = _env(var = 'XDG_DATA_DIRS', default = ['/usr/local/share/', '/usr/share/'])
+XDG_CONFIGURATION_DIRECTORIES = _env(var = 'XDG_CONFIG_DIRS', default = ['/etc/xdg/'])
+XDG_MENU_DIRECTORIES = [join(d, 'menus/') for d in XDG_CONFIGURATION_DIRECTORIES] + [join(d, 'menus/applications-merged/') for d in XDG_CONFIGURATION_DIRECTORIES]
+XDG_DIRECTORY_DIRECTORIES = [join(d,'desktop-directories/') for d in XDG_DATA_DIRECTORIES]
+XDG_APPICATION_DIRECTORIES = [join(d, 'applications/') for d in XDG_DATA_DIRECTORIES]
+XDG_ICON_DIRECTORIES = [join(USER_HOME,'.icons/')] + [join(d, 'icons/') for d in XDG_DATA_DIRECTORIES] + ['/usr/share/pixmaps/']
+XDG_THEME_DIRECTORIES = [join(USER_HOME,'.themes/')] + [join(d, 'themes/') for d in XDG_DATA_DIRECTORIES]
 STD_ICON_SIZES = '16, 24, 32, 36, 48, 64, 72, 96, 128, 160, 192, 256, scalable'.split(',')
 STD_ICON_EXTENSIONS = ['png', 'svg', 'xpm']
 
-def _env(var):
-    item = environ[var]
-    if ':' in item:
-        return item.split(':')
 
 
 def test():
-    print(HOME)
+    print(USER_HOME)
+    print(XDG_DATA_HOME)
+    print(XDG_CONFIGURATION_HOME)
+    print(XDG_CACHE_HOME)
+    print(XDG_DATA_DIRECTORIES)
+    print(XDG_CONFIGURATION_DIRECTORIES)
     print(XDG_MENU_DIRECTORIES)
     print(XDG_DIRECTORY_DIRECTORIES)
     print(XDG_APPICATION_DIRECTORIES)

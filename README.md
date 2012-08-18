@@ -1,10 +1,10 @@
-Bang Xdg
+bang-xdg
 ========
 A reusable xdg library for a Python 3 desktop environment named "bang".
 
 
 __WARNING:__
-This is under heavy development and not ready for production use or even testing. Also because of the specific nature of the library all standards may not be implemented.
+This is under heavy development and not ready for production use or even testing. Also because of the specific nature of the library standards will be implemented as needed and as a consequence all standards may not be implemented.
 
 __LICENSE:__
 
