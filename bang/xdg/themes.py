@@ -155,8 +155,7 @@ class IconResolver(object):
         if isfile(name):
             return name
         elif search('^.*\.(png|xpm|svg)', name):
-            self.name = name.strip('/') # just incase it's '/openbox.png'
-            self.name = self.name.split('.')
+            self.name = name.strip('/').split('.') # just incase it's '/openbox.png'
             self.exts = [].append(self.name[1])
             self.name = self.name[0]
         else:
