@@ -310,7 +310,7 @@ class DefaultLayout(MenuName, Layout):
 
 
 
-def __test__():
+def test():
     menu = Menu('/etc/xdg/menus/applications.menu')
     print('-------Main-------')
     print(menu.name)

@@ -219,11 +219,11 @@ class IconResolver(object):
                 self.val = check(theme)
                 if self.val == None:
                     for member in theme.get_inherits_iter():
-                        val = check(member)
-                        if val != None:
-                            return val
+                        self.val = check(member)
+                        if self.val != None:
+                            return self.val
                 else:
-                    return val
+                    return self.val
         return None
 
         def search_in_directory(self, directory, name, exts):
@@ -237,5 +237,5 @@ class IconResolver(object):
                         else:
                             return join(directory, i)
 
-def __test__():
+def test():
     pass

@@ -119,7 +119,7 @@ class IniFile(Searchable):
 
     def parse(self, path):
         with open(path, 'rt') as f:
-            self.text = f.read()
+            self.text = sub(r'#.*\n', '', f.read())
             self.info = FileDescriptor(path)
             self.has_file = True
         self.section = None
@@ -269,14 +269,14 @@ class Locales(object):
 
 
 
-def __test__():
+def test():
     ini = IniFile('/usr/share/icons/Humanity/index.theme')
     for section in ini:
         print(section)
     ini.parse('/usr/share/icons/gnome/index.theme') #WARNING: this overwrites the previous file.
     for section in ini:
         print(section)
-    xml = XmlFile('C:/Users/Christopher/Desktop/menus/applications.menu')
+    xml = XmlFile('/etc/xdg/menus/applications.menu')
     for elem in xml:
         if elem.tagName == 'Name':
             print(xml.get_text(elem))
