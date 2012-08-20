@@ -47,7 +47,7 @@ XDG_DIRECTORY_DIRECTORIES = [join(d,'desktop-directories/') for d in XDG_DATA_DI
 XDG_APPICATION_DIRECTORIES = [join(d, 'applications/') for d in XDG_DATA_DIRECTORIES]
 XDG_ICON_DIRECTORIES = [join(USER_HOME,'.icons/')] + [join(d, 'icons/') for d in XDG_DATA_DIRECTORIES] + ['/usr/share/pixmaps/']
 XDG_THEME_DIRECTORIES = [join(USER_HOME,'.themes/')] + [join(d, 'themes/') for d in XDG_DATA_DIRECTORIES]
-STD_ICON_SIZES = '16, 24, 32, 36, 48, 64, 72, 96, 128, 160, 192, 256, scalable'.split(',')
+STD_ICON_SIZES = '16,24,32,36,48,64,72,96,128,160,192,256,scalable'.split(',')
 STD_ICON_EXTENSIONS = ['png', 'svg', 'xpm']
 
 
