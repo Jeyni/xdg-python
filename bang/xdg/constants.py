@@ -50,9 +50,11 @@ XDG_THEME_DIRECTORIES = [join(USER_HOME,'.themes/')] + [join(d, 'themes/') for d
 STD_ICON_SIZES = '16, 24, 32, 36, 48, 64, 72, 96, 128, 160, 192, 256, scalable'.split(',')
 STD_ICON_EXTENSIONS = ['png', 'svg', 'xpm']
 
+XDG_TRASH_DIRECTORY = [join(d, '.Trash/') for d in XDG_DATA_HOME]
 
 
-def __test__():
+
+def test():
     print(USER_HOME)
     print(XDG_DATA_HOME)
     print(XDG_CONFIGURATION_HOME)
@@ -66,4 +68,5 @@ def __test__():
     print(XDG_THEME_DIRECTORIES)
     print(STD_ICON_SIZES)
     print(STD_ICON_EXTENSIONS)
+    print(XDG_TRASH_DIRECTORY)
 

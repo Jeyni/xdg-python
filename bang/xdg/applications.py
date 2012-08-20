@@ -97,5 +97,5 @@ class AppCollection(object):
     def get_app_by_name(self, name):
         return self.database[name]
 
-def __test__():
+def test():
     pass

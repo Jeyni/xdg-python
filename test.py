@@ -2,6 +2,9 @@
 import sys, os
 import bang.xdg.constants as c
 
+#TODO: REMOVE code blocks.
+#TODO: Write load all applications.
+#TODO: 
 
-
-c.__test__()
+if __name__ == '__main__':
+    c.test()
