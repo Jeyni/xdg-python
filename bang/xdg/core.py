@@ -23,19 +23,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 from collections import Iterable, Container
 from xml.dom.minidom import parse
-from re import match
+from re import match, sub
 from os.path import split, isfile
+
 
 class FileDescriptor(object):
     def __init__(self, path):
         if isfile(path):
             self.path = path
             self._p = split(path)
-            self.name = self._p[0]
-            self.directory = self._p[1]
-            self.ext = name.split('.')[1]
+            self.name = self._p[1]
+            self.directory = self._p[0]
+            self._n = self.name.split('.')
+            try: 
+                self.ext = self._n[1] 
+            except: 
+                self.ext = None 
         else:
             raise Exception('The path is a directory or an invalid file ')
+        del self._p
+        del self._n
 
 class Renamer(object):
     def __init__(self, data = {'old':'new'}):
@@ -72,12 +79,19 @@ class Section(Searchable):
             return ' '
 
     def get_as(self, key, T):
-        self.temp = self.get_value(key)
-        if self.temp != ' ':
+        self.str = self.get_value(key)
+        if self.str != ' ':
             if T != list:
-                return T(self.temp)
+                return T(self.str)
             else:
-                return self.temp.split(',;|')
+                if ',' in self.str:
+                    return self.str.split(',')
+                if '|' in self.str:
+                    return self.str.split('|')
+                if ';' in self.str:
+                    return self.str.split(';')
+                else:
+                    return [self.str]
         else:
             if T == str:
                 return ' '
@@ -123,7 +137,8 @@ class IniFile(Searchable):
             self.info = FileDescriptor(path)
             self.has_file = True
         self.section = None
-        for line in self.text.split('\n'):
+        self.lines = [t for t in self.text.split('\n') if t != '']
+        for line in self.lines:
             if match(IniFile.HEADER_PATTERN, line):
                 self.temp = line.strip('[]')
                 self.section = Section(self.temp)
@@ -139,8 +154,11 @@ class IniFile(Searchable):
 
     def get_section(self, name):
         for section in self.document:
-            if section.name == name:
-                return section
+            if section == None:
+                raise Exception('Unknown Error with {f}{t}'.format(f = self.info.path, t = self.text))
+            else:    
+                if section.name == name:
+                    return section
         else:
             return None
 
@@ -183,6 +201,16 @@ class XmlFile(Searchable):
         else:
             return self.temp
 
+    def get_children_by_name(self, name):
+        return \
+        [child for child in self.node_iter(self.data) \
+            if not self.is_empty(child) and child.tagName == name]
+
+    def get_children(self, element):
+        return \
+        [child for child in self.node_iter(element) \
+            if not self.is_text(child)]
+
     def has_text(self, element):
         for child in element.childNodes:
             if self.is_text(child):
@@ -201,6 +229,18 @@ class XmlFile(Searchable):
                 return True
             else:
                 continue
+        else:
+            return False
+
+    def has_children(self, element):
+        if element.hasChildNodes():
+            self._test = [c for c in element.childNodes\
+             if not self.is_text(c)\
+              and not self.is_empty(c)]
+            if len(self._test) < 1:
+                return False
+            else:
+                return True
         else:
             return False
 

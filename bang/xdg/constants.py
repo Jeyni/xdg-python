@@ -21,7 +21,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
-from os.path import expanduser, join
+from os.path import expanduser, join, isdir
 from os import environ
 
 def _env(var = ' ', default = []):
@@ -37,20 +37,31 @@ def _env(var = ' ', default = []):
 
 USER_HOME = expanduser('~')
 
+STD_ICON_SIZES = '16,24,32,36,48,64,72,96,128,160,192,256,scalable'.split(',')
+STD_ICON_EXTENSIONS = ['png', 'svg', 'xpm']
+
 XDG_DATA_HOME = _env(var = 'XDG_DATA_HOME', default = [join(USER_HOME, '.local/')])
 XDG_CONFIGURATION_HOME = _env(var = 'XDG_CONFIG_HOME', default = [join(USER_HOME, '.config/')])
 XDG_CACHE_HOME = _env(var = 'XDG_CACHE_HOME', default = [join(USER_HOME, '.cache/')])
 XDG_DATA_DIRECTORIES = _env(var = 'XDG_DATA_DIRS', default = ['/usr/local/share/', '/usr/share/'])
 XDG_CONFIGURATION_DIRECTORIES = _env(var = 'XDG_CONFIG_DIRS', default = ['/etc/xdg/'])
-XDG_MENU_DIRECTORIES = [join(d, 'menus/') for d in XDG_CONFIGURATION_DIRECTORIES] + [join(d, 'menus/applications-merged/') for d in XDG_CONFIGURATION_DIRECTORIES]
-XDG_DIRECTORY_DIRECTORIES = [join(d,'desktop-directories/') for d in XDG_DATA_DIRECTORIES]
-XDG_APPICATION_DIRECTORIES = [join(d, 'applications/') for d in XDG_DATA_DIRECTORIES]
-XDG_ICON_DIRECTORIES = [join(USER_HOME,'.icons/')] + [join(d, 'icons/') for d in XDG_DATA_DIRECTORIES] + ['/usr/share/pixmaps/']
-XDG_THEME_DIRECTORIES = [join(USER_HOME,'.themes/')] + [join(d, 'themes/') for d in XDG_DATA_DIRECTORIES]
-STD_ICON_SIZES = '16,24,32,36,48,64,72,96,128,160,192,256,scalable'.split(',')
-STD_ICON_EXTENSIONS = ['png', 'svg', 'xpm']
 
-XDG_TRASH_DIRECTORY = [join(d, '.Trash/') for d in XDG_DATA_HOME]
+XDG_MENU_DIRECTORIES = [join(d, 'menus/') for d in XDG_CONFIGURATION_DIRECTORIES if isdir(join(d, 'menus/'))] \
+ + [join(d, 'menus/applications-merged/') for d in XDG_CONFIGURATION_DIRECTORIES if isdir(join(d, 'menus/applications-merged/'))]
+
+XDG_DIRECTORY_DIRECTORIES = [join(d,'desktop-directories/') for d in XDG_DATA_DIRECTORIES if isdir(join(d,'desktop-directories/'))]
+
+XDG_APPICATION_DIRECTORIES = [join(d, 'applications/') for d in XDG_DATA_DIRECTORIES if isdir(join(d, 'applications/'))]
+
+XDG_ICON_DIRECTORIES = [join(USER_HOME,'.icons/')] \
+ + [join(d, 'icons/') for d in XDG_DATA_DIRECTORIES if isdir(join(d, 'icons/'))] \
+ + ['/usr/share/pixmaps/']
+
+XDG_THEME_DIRECTORIES = [join(USER_HOME,'.themes/')] \
+ + [join(d, 'themes/') for d in XDG_DATA_DIRECTORIES]
+
+XDG_TRASH_DIRECTORY = [join(d, '.Trash/') for d in XDG_DATA_HOME if isdir(join(d, '.Trash/'))] \
+ + [join(d, 'share/Trash/') for d in XDG_DATA_HOME if isdir(join(d, 'share/Trash/'))]
 
 
 

@@ -66,8 +66,11 @@ class DesktopEntry(object):
     def get_as(self, key, T):
         return self.section.get_as(key, T)
 
+    def __str__(self):
+        return '{} {}'.format(self.name, self.file_info.name)
+
 def get_desktop_file_for_name(name):
-    if not match(r'\w+\.desktop', name):
+    if not match(r'.+\.desktop$', name):
         name = '{n}.desktop'.format(n = name)
     for ad in XDG_APPICATION_DIRECTORIES:
         for f in listdir(ad):
@@ -83,19 +86,26 @@ class AppCollection(object):
         self.database = {}
         for ad in XDG_APPICATION_DIRECTORIES:
             for f in listdir(ad):
-                if match(r'\w+\.desktop', name):
-                    self.entry = DesktopEntry(join(ad, f))
-                    self.database[self.name] = entry
+                if match(r'.+\.desktop$', f):
+                    self._entry = DesktopEntry(join(ad, f))
+                    self.database[f] = self._entry
 
     def get_apps_by_category(self, category):
-        self.collector = [ ]
+        self._collector = [ ]
         for entry in self.database:
             if category in entry.categories:
-                self.collector.append(entry)
-        return self.collector if self.collector == [ ] else None
+                self._collector.append(entry)
+        return self._collector if self._collector == [ ] else None
 
     def get_app_by_name(self, name):
         return self.database[name]
+
+    def __iter__(self):
+        for app in self.database.values():
+            yield app
+
+
+
 
 def test():
     pass
