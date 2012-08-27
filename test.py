@@ -5,9 +5,8 @@ import bang.xdg.constants as c
 import bang.xdg.menus as m
 
 
-#TODO: Get menu merging and layout working and stable.
+#TODO: Finish "TrashCan".
 #TODO: Support auto-start directory *low priority*.
-#TODO: Finish "TrashCan" *low priority*.
 #TODO: Bang Only -- Figure out how to control GTK+/Qt Theming
 
 if __name__ == '__main__':
