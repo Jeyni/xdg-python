@@ -21,17 +21,19 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
-from collections import Iterable, Container
-from xml.dom.minidom import parse
-from re import match, sub
-from os.path import split, isfile
+import collections
+import xml.dom.minidom
+import re
+import os.path
 
+def lrange(lst):
+    return range(len(lst))
 
 class FileDescriptor(object):
     def __init__(self, path):
-        if isfile(path):
+        if os.path.isfile(path):
             self.path = path
-            self._p = split(path)
+            self._p = os.path.split(path)
             self.name = self._p[1]
             self.directory = self._p[0]
             self._n = self.name.split('.')
@@ -63,7 +65,7 @@ class Renamer(object):
             if s in string:
                 string.replace(s, self.data[s])
 
-class Searchable(Iterable, Container):
+class Searchable(collections.Iterable, collections.Container):
     def __init__(self):
         pass
 
@@ -133,16 +135,16 @@ class IniFile(Searchable):
 
     def parse(self, path):
         with open(path, 'rt') as f:
-            self.text = sub(r'#.*\n', '', f.read())
+            self.text = re.sub(r'#.*\n', '', f.read())
             self.info = FileDescriptor(path)
             self.has_file = True
         self.section = None
         self.lines = [t for t in self.text.split('\n') if t != '']
         for line in self.lines:
-            if match(IniFile.HEADER_PATTERN, line):
+            if re.match(IniFile.HEADER_PATTERN, line):
                 self.temp = line.strip('[]')
                 self.section = Section(self.temp)
-            elif match(IniFile.KEY_VALUE_PATTERN, line):
+            elif re.match(IniFile.KEY_VALUE_PATTERN, line):
                 self.temp = line.split('=')
                 self.key = self.temp[0]
                 self.value = self.temp[1]
@@ -180,7 +182,7 @@ class XmlFile(Searchable):
 
     def parse(self, path):
         with open(path) as f:
-            self.dom = parse(f) #xml.dom.minidom.parse
+            self.dom = xml.dom.minidom.parse(f)
             self.data = self.dom.documentElement
             self.info = FileDescriptor(path)
             self.has_file = True

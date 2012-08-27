@@ -21,16 +21,20 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
-from bang.xdg.constants import XDG_APPICATION_DIRECTORIES
-from bang.xdg.core import IniFile
-from os.path import join
-from os import listdir
-from re import match
+import bang.xdg.constants as constants
+import bang.xdg.core as core
+import os.path
+import os
+import re
+
+# THIS IS SET ABOVE THE 'test' METHOD AT THE END OF THE FILE !!!!!
+# IT IS A GLOBAL DICTIONARY OF EVERY APPLICATION '.desktop' FILE IN YOUR SYSTEM.
+apps = {}
 
 
 class DesktopEntry(object):
     def __init__(self, path = None):
-        self.ini = IniFile(path)
+        self.ini = core.IniFile(path)
         self.file_info = None
         if self.ini.has_file: self.parse()
 
@@ -70,42 +74,23 @@ class DesktopEntry(object):
         return '{} {}'.format(self.name, self.file_info.name)
 
 def get_desktop_file_for_name(name):
-    if not match(r'.+\.desktop$', name):
+    if not re.match(r'.+\.desktop$', name):
         name = '{n}.desktop'.format(n = name)
-    for ad in XDG_APPICATION_DIRECTORIES:
-        for f in listdir(ad):
-            if f == name:
-                return join(ad, f)
+    return apps[name]
 
 def get_desktop_entry_for_name(name):
     path = get_desktop_file_for_name(name)
     return DesktopEntry(path)
 
-class AppCollection(object):
-    def __init__(self):
-        self.database = {}
-        for ad in XDG_APPICATION_DIRECTORIES:
-            for f in listdir(ad):
-                if match(r'.+\.desktop$', f):
-                    self._entry = DesktopEntry(join(ad, f))
-                    self.database[f] = self._entry
 
-    def get_apps_by_category(self, category):
-        self._collector = [ ]
-        for entry in self.database:
-            if category in entry.categories:
-                self._collector.append(entry)
-        return self._collector if self._collector == [ ] else None
+def get_apps_by_category(category):
+    return [e for e in apps if category in entry.categories ]
 
-    def get_app_by_name(self, name):
-        return self.database[name]
-
-    def __iter__(self):
-        for app in self.database.values():
-            yield app
-
-
-
+#THIS CREATES THE GLOBAL APP LIST !!!!!!!!!
+for ad in constants.XDG_APPICATION_DIRECTORIES:
+    for f in os.listdir(ad):
+        if re.match(r'.+\.desktop$', f):
+            apps[f] = DesktopEntry(os.path.join(ad, f))
 
 def test():
     pass

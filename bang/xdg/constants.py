@@ -22,11 +22,11 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 from os.path import expanduser, join, isdir
-from os import environ
+import os
 
 def _env(var = ' ', default = []):
     try:
-        item = environ[var]
+        item = os.environ[var]
         if ':' in item:
             return item.split(':')
         else:
