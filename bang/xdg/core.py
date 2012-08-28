@@ -266,31 +266,17 @@ class XmlFile(Searchable):
                 yield child
 
     def get_as(self, node, attr, type, default = None):
-        if type == float:
-            if node.hasAttribute(attr):
-                return float(node.getAttribute(attr))
-            else:
-                return 0.0 if default == None else default
-        elif type == int:
-            if node.hasAttribute(attr):
-                return int(node.getAttribute(attr))
-            else:
-                return 0 if default == None else default
-        elif type == str:
-            if node.hasAttribute(attr):
-                return node.getAttribute(attr)
-            else:
-                return ' ' if default == None else default
-        elif type == bool:
-            if node.hasAttribute(attr):
-                return bool(node.getAttribute(attr))
-            else:
-                return False if default == None else default
+        if node.hasAttribute(attr):
+            return T(node.getAttribute(attr))
         else:
-            if node.hasAttribute(attr):
-                return node.getAttribute(attr)
+            elif T == int:
+                return 0 if default != None else default
+            elif T == str:
+                return ' ' if default != None else default
+            elif T == bool:
+                return False if default != None else default
             else:
-                return None if default == None else default
+                return None
 
     def __iter__(self):
         return self.node_iter(self.data)
