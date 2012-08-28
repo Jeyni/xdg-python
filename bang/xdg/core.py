@@ -21,19 +21,21 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
-import collections
-import xml.dom.minidom
+import xml.dom.minidom as xdom
+import collections as c
+import os.path as p
 import re
-import os.path
+
+
 
 def lrange(lst):
     return range(len(lst))
 
 class FileDescriptor(object):
     def __init__(self, path):
-        if os.path.isfile(path):
+        if p.isfile(path):
             self.path = path
-            self._p = os.path.split(path)
+            self._p = p.split(path)
             self.name = self._p[1]
             self.directory = self._p[0]
             self._n = self.name.split('.')
@@ -42,7 +44,7 @@ class FileDescriptor(object):
             except: 
                 self.ext = None 
         else:
-            raise Exception('The path is a directory or an invalid file ')
+            raise Exception('The path is a directory or an invalid file')
         del self._p
         del self._n
 
@@ -65,7 +67,7 @@ class Renamer(object):
             if s in string:
                 string.replace(s, self.data[s])
 
-class Searchable(collections.Iterable, collections.Container):
+class Searchable(c.Iterable, c.Container):
     def __init__(self):
         pass
 
@@ -182,7 +184,7 @@ class XmlFile(Searchable):
 
     def parse(self, path):
         with open(path) as f:
-            self.dom = xml.dom.minidom.parse(f)
+            self.dom = xdom.parse(f)
             self.data = self.dom.documentElement
             self.info = FileDescriptor(path)
             self.has_file = True

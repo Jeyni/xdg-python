@@ -25,8 +25,10 @@ from bang.xdg.applications import DesktopEntry
 import bang.xdg.applications as applications
 import bang.xdg.constants as constants
 import bang.xdg.core as core
-import os.path
+import os.path as p
 import os
+
+
 
 
 class Separator(object):
@@ -194,18 +196,17 @@ class SubMenu(object):
                 elif app not in self.layout.entries:
                     self.entries.append(app)
         for sub in self.entries:
-            if isinstance(sub, SubMenu):
-                sub.load_applications()
+            if isinstance(sub, SubMenu): sub.load_applications()
 
     def _included(self, app):
-        return self._matched(app, self.includes)
+        if self.includes != None:
+            return self.includes.eval(app)
+        else:
+            return False
 
     def _excluded(self, app):
-        return self._matched(app, self.excludes)
-
-    def _matched(self, app, conditions):
-        if conditions != None:
-            return conditions.eval(app)
+        if self.excludes != None:
+            return self.excludes.eval(app)
         else:
             return False
 
@@ -230,7 +231,7 @@ class SubMenu(object):
             yield item
 
 class Menu(SubMenu):
-    def __init__(self, path = None):
+    def __init__(self, path = None, load = True):
         SubMenu.__init__(self)
         self.app_directories = [ ]
         self.dir_directories = [ ]
@@ -239,9 +240,9 @@ class Menu(SubMenu):
         self.renamer = None
         self.file_info = None
         self.xml = core.XmlFile(path)
-        if path != None: self.parse()
+        if path != None: self.parse(load = load)
 
-    def parse(self, path = None):
+    def parse(self, path = None, load = True):
         if path != None: self.xml.parse(path)
         self.file_info = self.xml.info 
         if not self.xml.has_file: 
@@ -263,9 +264,16 @@ class Menu(SubMenu):
                 self._handle_menu_elements(self._submenu, self.xml.node_iter(element))
                 self._submenu.apply_layout()
                 self.submenus.append(self._submenu)
-            self.apply_layout()
-            self.load_applications()
-            self.clean()
+            for directory in self.merge_directories:
+                if 'applications-merged' in directory:
+                    for f in os.listdir(directory):
+                        f = p.join(directory, f)
+                        self._merged = Menu(f, load = False)
+                        self.submenus.extend(self._merged.submenus)
+            if load == True:
+                self.apply_layout()
+                self.load_applications()
+                self.clean()
 
     def _process_dirs(self, name, directories):
         self.dirs = self.xml.get_all_by_name(name)
@@ -281,8 +289,8 @@ class Menu(SubMenu):
             elif self.tag == 'Directory':
                 self.temp = self.xml.get_text(element)
                 for directory in self.dir_directories:
-                    self.d = os.path.join(directory, self.temp)
-                    if os.path.isfile(self.d):
+                    self.d = p.join(directory, self.temp)
+                    if p.isfile(self.d):
                         menu.directory = DesktopEntry(self.d)
                     else:
                         continue
@@ -303,33 +311,31 @@ class Menu(SubMenu):
             elif self.tag == 'MergeFile':
                 self.attrib = element.getAttribute('type')
                 self.p = self.xml.get_text(element)
-                self.s = os.path.split(self.p)
+                self.s = p.split(self.p)
                 self.d = self.s[0]
                 self.f = self.s[1]
                 self.m = Menu()
                 if self.attrib == 'path' or self.attrib == ' ':
-                    if not os.path.isfile(self.p):
-                        self.p = os.path.join(menu.file_info.path_name, self.f)    
+                    if not p.isfile(self.p):
+                        self.p = p.join(menu.file_info.path_name, self.f)    
                 elif self.attrib == 'parent':
                     for d in self.merge_directories:
-                        if d != menu.file_info.path_name and os.path.isfile(os.path.join(d, self.f)):
-                            self.p = os.path.join(d, self.f)
-                if os.path.isfile(self.p):
-                    self.m.parse(self.p)
-                    self.m = self.m.as_submenu(menu.name, menu)
-                    menu.submenus = menu.submenus + self.m
+                        if d != menu.file_info.path_name and p.isfile(p.join(d, self.f)):
+                            self.p = p.join(d, self.f)
+                if p.isfile(self.p):
+                    self.m.parse(self.p, False)
+                    menu.submenus = menu.submenus + self.m.submenus
             elif self.tag == 'MergeDir':
                 self.d = self.xml.get_text(element)
-                if not os.path.isdir(self.d):
-                    if os.path.isdir(os.path.join(menu.path, self.d)):
-                        self.d = os.path.join(menu.path, self.d)
+                if not p.isdir(self.d):
+                    if p.isdir(p.join(menu.path, self.d)):
+                        self.d = p.join(menu.path, self.d)
                     else:
                         continue
                 for f in os.listdir(self.d):
                     self.sub = Menu()
-                    self.sub.parse(os.path.join(self.d, f))
-                    self.sub = self.sub.as_submenu(menu.name, menu)
-                    menu.submenus = menu.submenus + self.sub
+                    self.sub.parse(p.join(self.d, f))
+                    menu.submenus = menu.submenus + self.sub.submenus
             elif self.tag == 'Move':
                 self.renamer = core.Renamer()
                 self.old = None
@@ -418,10 +424,10 @@ class Menu(SubMenu):
         self.temp.directory = self.directory
         self.temp.includes = self.includes
         self.temp.excludes = self.excludes
-        self.temp.catagories = self.catagories
         self.temp.submenus = self.submenus
         self.temp.entries = self.entries
         self.temp.only_unallocated = self.only_unallocated
+        self.temp.deleted = self.deleted
         return self.temp
 
 
@@ -517,7 +523,7 @@ class Blacklist(object):
             raise Exception('Unknown Type: {}'.format(value.__repr__()))
 
 def test():
-    menu = Menu('/etc/xdg/menus/applications.menu')
+    menu = Menu('/etc/xdg/menus/xfce-applications.menu')
     print('-------Main-------')
     print(menu.name)
     print(menu.app_directories)

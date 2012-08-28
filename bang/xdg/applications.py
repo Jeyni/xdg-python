@@ -23,6 +23,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 import bang.xdg.constants as constants
 import bang.xdg.core as core
+import subprocess
 import os.path
 import os
 import re
@@ -70,8 +71,32 @@ class DesktopEntry(object):
     def get_as(self, key, T):
         return self.section.get_as(key, T)
 
+    def execute(self, params = [ ]):
+        try:
+            self.cmd = strip(self.app_exec) #'strip' defined below the class
+            self.cmd = self.cmd + ' ' + ' '.join(params)
+            self.cmd = self.cmd.strip()
+            self.pid = subprocess.Popen(self.cmd)
+            return None
+        except:
+            try:
+                self.cmd = strip(self.try_exec) #'strip' defined below the class
+                self.cmd = self.cmd + ' ' + ' '.join(params)
+                self.cmd = self.cmd.strip()
+                self.pid = subprocess.Popen(self.cmd)
+                return None
+            except:
+                return (self.pid, self.name, self.file_info.name, self.cmd)
+
     def __str__(self):
         return '{} {}'.format(self.name, self.file_info.name)
+
+def strip(args):
+    args = args.split()
+    for i in range(len(args)):
+        if match('%[Uu]', args[i]):
+            args.remove(args[i])
+    return args
 
 def get_desktop_file_for_name(name):
     if not re.match(r'.+\.desktop$', name):
@@ -82,9 +107,8 @@ def get_desktop_entry_for_name(name):
     path = get_desktop_file_for_name(name)
     return DesktopEntry(path)
 
-
 def get_apps_by_category(category):
-    return [e for e in apps if category in entry.categories ]
+    return [e for e in apps if category in entry.categories]
 
 #THIS CREATES THE GLOBAL APP LIST !!!!!!!!!
 for ad in constants.XDG_APPICATION_DIRECTORIES:
