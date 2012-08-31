@@ -31,9 +31,16 @@ import re
 def lrange(lst):
     return range(len(lst))
 
+def get_drive(path):
+    drv = p.splitdrive(path)[0]
+    if drv == '':
+        return '/'
+    else:
+        return drv
+
 class FileDescriptor(object):
     def __init__(self, path):
-        if p.isfile(path):
+        if p.isfile(path) or p.isdir(path):
             self.path = path
             self._p = p.split(path)
             self.name = self._p[1]
@@ -44,7 +51,7 @@ class FileDescriptor(object):
             except: 
                 self.ext = None 
         else:
-            raise Exception('The path is a directory or an invalid file')
+            raise Exception('The path is an invalid file')
         del self._p
         del self._n
 
@@ -265,12 +272,14 @@ class XmlFile(Searchable):
             else:
                 yield child
 
-    def get_as(self, node, attr, type, default = None):
+    def get_as(self, node, attr, T, default = None):
         if node.hasAttribute(attr):
             return T(node.getAttribute(attr))
         else:
-            elif T == int:
+            if T == int:
                 return 0 if default != None else default
+            elif T == float:
+                return 0.0 if default != None else default
             elif T == str:
                 return ' ' if default != None else default
             elif T == bool:

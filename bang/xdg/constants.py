@@ -36,6 +36,7 @@ def _env(var = ' ', default = []):
 
 
 USER_HOME = expanduser('~')
+USER_UID = str(os.getuid())
 
 STD_ICON_SIZES = '16,24,32,36,48,64,72,96,128,160,192,256,scalable'.split(',')
 STD_ICON_EXTENSIONS = ['png', 'svg', 'xpm']
@@ -60,7 +61,7 @@ XDG_ICON_DIRECTORIES = [join(USER_HOME,'.icons/')] \
 XDG_THEME_DIRECTORIES = [join(USER_HOME,'.themes/')] \
  + [join(d, 'themes/') for d in XDG_DATA_DIRECTORIES]
 
-XDG_TRASH_DIRECTORY = [join(d, '.Trash/') for d in XDG_DATA_HOME if isdir(join(d, '.Trash/'))] \
+XDG_HOME_TRASH_DIRECTORIES = [join(d, '.Trash/') for d in XDG_DATA_HOME if isdir(join(d, '.Trash/'))] \
  + [join(d, 'share/Trash/') for d in XDG_DATA_HOME if isdir(join(d, 'share/Trash/'))]
 
 
@@ -79,5 +80,5 @@ def test():
     print(XDG_THEME_DIRECTORIES)
     print(STD_ICON_SIZES)
     print(STD_ICON_EXTENSIONS)
-    print(XDG_TRASH_DIRECTORY)
+    print(XDG_HOME_TRASH_DIRECTORIES)
 

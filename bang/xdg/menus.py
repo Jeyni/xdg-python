@@ -440,7 +440,7 @@ class Layout(object):
 
     def arrange(self, menu):
         self.temp_menu = [ ]
-        self.blacklist = Blacklist([e for e in self.entries if e.name != 'Separator' and e.name != 'Merge'])
+        self.blacklist = Blacklist(self.entries)
         for entry in self.entries:
             if isinstance(entry, DesktopEntry):
                 if entry.ini.has_file:
@@ -500,7 +500,7 @@ class DefaultLayout(MenuName, Layout):
 
 class Blacklist(object):
     def __init__(self, data):
-        self.data = data
+        self.data = [e for e in data if e.name != 'Separator' and e.name != 'Merge']
 
     def __iter__(self):
         for d in self.data:
@@ -529,8 +529,8 @@ def test():
     print(menu.app_directories)
     print(menu.dir_directories)
     print(menu.merge_directories)
-    print(menu.includes)
-    print(menu.excludes)
+    print('Includes:', menu.includes)
+    print('Excludes:', menu.excludes)
     print('-------Subs-------')
     for sub in menu.entries:
         if isinstance(sub, Separator):
@@ -539,8 +539,8 @@ def test():
             print(sub)
         else:
             print(sub)
-            print(sub.includes)
-            print(sub.excludes)
+            print('Includes:', sub.includes)
+            print('Excludes:', sub.excludes)
             print(sub.layout)
             for subsub in sub.entries:
                 if isinstance(subsub, Separator):
@@ -549,6 +549,6 @@ def test():
                     print('{0}->'.format(sub), subsub)
                 else:
                     print('{0}->'.format(sub), subsub, subsub.entries)
-                    print(subsub.includes)
-                    print(subsub.excludes)
+                    print('{0}->'.format(sub),'Includes:', subsub.includes)
+                    print('{0}->'.format(sub),'Excludes:', subsub.excludes)
     print('--------End--------')

@@ -163,16 +163,16 @@ class IconResolver(object):
             self.name = name
         for xdg_dir in constants.XDG_ICON_DIRECTORIES:
             if xdg_dir == '/usr/share/pixmaps/':
-                self.ret = self.re.search_in_pixmaps(self.name, size, self.exts)
+                self.ret = self.search_in_pixmaps(self.name, size, self.exts)
                 if self.ret == None:
                     continue
                 else:
                     return self.ret
             else:
-                self.ret = self.re.search_in_theme(self.theme, self.name, xdg_dir, size, self.exts)
+                self.ret = self.search_in_theme(self.theme, self.name, xdg_dir, size, self.exts)
                 if self.ret == None:
                     for theme in self.theme.get_inherits_iter():
-                        self.ret = self.re.search_in_theme(theme, self.name, xdg_dir, size, self.exts)
+                        self.ret = self.search_in_theme(theme, self.name, xdg_dir, size, self.exts)
                         if self.ret == None:
                             continue
                         else:
@@ -181,7 +181,7 @@ class IconResolver(object):
                     return self.ret
         return None
 
-    def re.search_in_pixmaps(self, name, size, exts = constants.STD_ICON_EXTENSIONS):
+    def search_in_pixmaps(self, name, size, exts = constants.STD_ICON_EXTENSIONS):
         for ext in exts:
             self.item = '/usr/share/pixmaps/{0}.{1}'.format(self.name, ext)
             if p.isfile(self.item):
@@ -189,7 +189,7 @@ class IconResolver(object):
         else:
             return None
     
-    def re.search_in_theme(self, theme, name, xdg_dir, size, exts = constants.STD_ICON_EXTENSIONS):
+    def search_in_theme(self, theme, name, xdg_dir, size, exts = constants.STD_ICON_EXTENSIONS):
         self.dirs = theme.get_directory_group(size = size)
         for subdir in self.dirs:
             self.item = p.join(xdg_dir, theme.name, subdir)
@@ -227,7 +227,7 @@ class IconResolver(object):
                     return self.val
         return None
 
-        def re.search_in_directory(self, directory, name, exts):
+        def search_in_directory(self, directory, name, exts):
             if p.isdir(directory) == False:
                 return None
             else:
