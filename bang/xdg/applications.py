@@ -23,8 +23,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 import bang.xdg.constants as constants
 import bang.xdg.core as core
-import subprocess
-import os.path
+import subprocess as exe
+import os.path as p
 import os
 import re
 
@@ -76,15 +76,15 @@ class DesktopEntry(object):
             self.cmd = strip(self.app_exec) #'strip' defined below the class
             self.cmd = self.cmd + ' ' + ' '.join(params)
             self.cmd = self.cmd.strip()
-            self.pid = subprocess.Popen(self.cmd)
-            return None
+            self.pid = exe.Popen(self.cmd)
+            return self.pid
         except:
             try:
                 self.cmd = strip(self.try_exec) #'strip' defined below the class
                 self.cmd = self.cmd + ' ' + ' '.join(params)
                 self.cmd = self.cmd.strip()
-                self.pid = subprocess.Popen(self.cmd)
-                return None
+                self.pid = exe.Popen(self.cmd)
+                return self.pid
             except:
                 return (self.pid, self.name, self.file_info.name, self.cmd)
 
@@ -94,7 +94,7 @@ class DesktopEntry(object):
 def strip(args):
     args = args.split()
     for i in range(len(args)):
-        if match('%[Uu]', args[i]):
+        if match('%[UuFfDdNnickvm]', args[i]):
             args.remove(args[i])
     return args
 
@@ -114,7 +114,7 @@ def get_apps_by_category(category):
 for ad in constants.XDG_APPICATION_DIRECTORIES:
     for f in os.listdir(ad):
         if re.match(r'.+\.desktop$', f):
-            apps[f] = DesktopEntry(os.path.join(ad, f))
+            apps[f] = DesktopEntry(p.join(ad, f))
 
 def test():
     pass

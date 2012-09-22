@@ -42,6 +42,7 @@ class IconDirectory(object):
 class IconTheme(object):
     def __init__(self, path = None):
         self.ini = core.IniFile(path)
+        self.resolver = IconResolver(self)
         self.parse()
 
     def parse(self, path = None):
@@ -57,21 +58,11 @@ class IconTheme(object):
                 if self.name != 'IconTheme':
                     self.directories.append(self.name)
         else:
-            self.directories = self.directories.split(',;')
+            self.directories = self.directories.split(',')
         self.name = self.section.get_item('Name')
-        if self.name == None: 
-            self.comment = ''
         self.comment = self.section.get_item('Comment')
-        if self.comment == None: 
-            self.comment = ''
-        self.inherits = self.section.get_item('Inherits')
-        if self.inherits == None: 
-            self.inherits = []
-        else:
-            self.inherits = self.inherits.split(',;')
+        self.inherits = self.section.get_as('Inherits', list)
         self.example = self.section.get_item('Example')
-        if self.example == None: 
-            self.example = ' '
 
     def get_name(self):
         return self.name
@@ -95,14 +86,14 @@ class IconTheme(object):
                 return str(num)
         if size != 0 and min_size != 0:
             raise Exception('You may only set \'size\' OR \'min_size\'')
-        elif size != 0:
+        elif size > 0:
             size = rectify(size)
             self.temp = []
             for directory in self.directories:
                 if re.search(size, directory) == True:
                     self.temp.append(directory)
             return self.temp
-        elif min_size != 0:
+        elif min_size > 0:
             min_size = rectify(min_size)
             for i in range(len(self.directories)):
                 if re.search(size, self.directories[i]) == True:
@@ -117,35 +108,35 @@ class IconTheme(object):
         return self.inherits #string list!!!!!
 
     def get_inherits_iter(self):
-        for inherit in self.inherits:
-            yield get_icon_theme_for_name(inherit)
+        for inherit in [get_icon_theme_for_name(i) for i in self.inherits]:
+            yield inherit
 
     def get_example(self):
         return self.example
 
     def get_icon_for_name(self, name, size):
-        self.resolver = IconResolver(self)
         self.resolved = self.resolver.resolve(name, size)
         if self.resolved == None:
             self.resolved = self.resolver.hungry_resolve(name, size)
         if self.resolved != None:
             return self.resolved
         else:
-            raise Exception('''
-            \"{icon}\" cannot be found, because:
-            1.) Icon does not exist, or...
-            2.) The theme does not inherit a theme that has it.
-            '''.format(icon=name))
+            self._err =\
+            "\"{icon}\" cannot be found, because:\n" +\
+            "1.) Icon does not exist, or...\n" +\
+            "2.) The theme does not inherit a theme that has it."
+            raise Exception(self._err.format(icon=name))
 
 def get_icon_theme_for_name(name):
     name = renamer.replace(name)
     for directory in constants.XDG_ICON_DIRECTORIES:
-        if directory  == '/usr/share/pixmaps/':
-            continue
-        else:
+        if directory != '/usr/share/pixmaps/':
             fqdir = p.join(directory, name)
             if p.isdir(fqdir):
                 return IconTheme(p.join(fqdir, 'index.theme'))
+        else:
+            continue
+
 
 class IconResolver(object):
     def __init__(self, theme, exts = constants.STD_ICON_EXTENSIONS):
@@ -157,86 +148,71 @@ class IconResolver(object):
             return name
         elif re.search('^.*\.(png|xpm|svg)', name):
             self.name = name.strip('/').split('.') # just incase it's '/openbox.png'
-            self.exts = [].append(self.name[1])
+            self.exts = [self.name[1]]
             self.name = self.name[0]
         else:
             self.name = name
-        for xdg_dir in constants.XDG_ICON_DIRECTORIES:
-            if xdg_dir == '/usr/share/pixmaps/':
-                self.ret = self.search_in_pixmaps(self.name, size, self.exts)
-                if self.ret == None:
-                    continue
-                else:
-                    return self.ret
+        self.ret = self.search_in_pixmaps(self.name, self.exts)
+        if self.ret != None:
+            return self.ret
+        else:
+            self.ret = self.search_in_theme(self.theme, self.name, size, self.exts)
+            if self.ret != None:
+                return self.ret
             else:
-                self.ret = self.search_in_theme(self.theme, self.name, xdg_dir, size, self.exts)
-                if self.ret == None:
+                for theme in self.theme.get_inherits_iter():
+                    self.ret = self.search_in_theme(theme, self.name, size, self.exts)
+                    if self.ret == None:
+                        continue
+                    else:
+                        return self.ret
+        return None
+
+    def hungry_resolve(self, name, size):
+        if p.isfile(name):
+            return name
+        elif re.search('^.*\.(png|xpm|svg)', name):
+            self.name = name.strip('/').split('.') # just incase it's '/openbox.png'
+            self.exts = [self.name[1]]
+            self.name = self.name[0]
+        else:
+            self.name = name
+        self.ret = self.search_in_pixmaps(self.name, self.exts)
+        if self.ret != None:
+            return self.ret
+        else:
+            self.sizes = constants.STD_ICON_SIZES
+            self.sizes = self.sizes[self.sizes.index(size) + 1:] if size != 'scalable' else ['scalable']
+            for s in self.sizes:
+                self.ret = self.search_in_theme(self.theme, self.name, s, self.exts)
+                if self.ret != None:
+                    return self.ret
+                else:
                     for theme in self.theme.get_inherits_iter():
-                        self.ret = self.search_in_theme(theme, self.name, xdg_dir, size, self.exts)
+                        self.ret = self.search_in_theme(theme, self.name, s, self.exts)
                         if self.ret == None:
                             continue
                         else:
                             return self.ret
-                else:
-                    return self.ret
         return None
 
-    def search_in_pixmaps(self, name, size, exts = constants.STD_ICON_EXTENSIONS):
+    def search_in_pixmaps(self, name, exts = constants.STD_ICON_EXTENSIONS):
         for ext in exts:
             self.item = '/usr/share/pixmaps/{0}.{1}'.format(self.name, ext)
             if p.isfile(self.item):
                 return self.item
         else:
             return None
-    
-    def search_in_theme(self, theme, name, xdg_dir, size, exts = constants.STD_ICON_EXTENSIONS):
-        self.dirs = theme.get_directory_group(size = size)
-        for subdir in self.dirs:
-            self.item = p.join(xdg_dir, theme.name, subdir)
-            self.item = renamer.replace(self.item)
-            self.item = self.re.search_in_directory(self.item, exts)
-            if self.item != None:
-                return self.item
-        else:
-            return None
 
-    def hungry_resolve(self, theme, name, size, exts = constants.STD_ICON_EXTENSIONS):
-        for directory in constants.XDG_ICON_DIRECTORIES:
-            if directory == '/usr/share/pixmaps/':
-                for ext in exts:
-                    self.item = '{0}{1}.{2}'.format(directory, name, ext)
-                    if p.isfile(self.item):
-                        return self.item
-            else:
-                def check(i_theme):
-                    for subdir in icon_theme.get_directory_group(min_size = size):
-                        self.item = p.join(directory, i_theme.name ,subdir)
-                        self.item = renamer.replace(self.item)
-                        self.item = self.re.search_in_directory(self.item, exts)
-                        if self.item != None:
-                            return self.item
-                    else:
-                        return None
-                self.val = check(theme)
-                if self.val == None:
-                    for member in theme.get_inherits_iter():
-                        self.val = check(member)
-                        if self.val != None:
-                            return self.val
-                else:
-                    return self.val
-        return None
-
-        def search_in_directory(self, directory, name, exts):
-            if p.isdir(directory) == False:
-                return None
-            else:
-                for i in os.listdir(directory):
+    def search_in_theme(self, theme, name, size, exts = constants.STD_ICON_EXTENSIONS):
+        for root, subdir, files in os.walk(theme.ini.file_info.directory):
+            if str(size) in root:
+                for f in files:
                     for ext in exts:
-                        if i != '{0}.{1}'.format(name, ext):
-                            continue
-                        else:
-                            return p.join(directory, i)
+                        self.item = '{0}.{1}'.format(name, ext)
+                        if self.item == f:
+                            return self.item
+
 
 def test():
     pass

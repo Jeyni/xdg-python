@@ -8,7 +8,7 @@ import bang.xdg.trash as t
 
 
 #TODO: Support auto-start directory *low priority*.
-#TODO: Bang Only -- Figure out how to control GTK+/Qt Theming
+#TODO: Bang Only -- Figure out how to control GTK+/Qt Theming.
 
 if __name__ == '__main__':
     c.test()
