@@ -1,10 +1,9 @@
 bang-xdg
 ========
-A reusable xdg library for a Python 3 desktop environment named "bang".
-
+A reusable xdg library for a Python 3 desktop environment named "bang" (Now in [Ruby](https://github.com/banana-man/bang-desktop))
 
 __WARNING:__
-This is under heavy development and not ready for production use. Also because of the specific nature of the library, standards will be implemented as needed. As a consequence all standards may not be implemented.
+This is was under heavy development and abandoned. Some parts may be reused but it's still not ready for production use out of the box. Also because of the specific nature of the library, standards were implemented as needed. As a consequence all standards were not implemented. HINT: `bang.xdg.trash` works really well.
 
 __LICENSE:__
 
