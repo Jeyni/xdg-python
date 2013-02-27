@@ -61,13 +61,11 @@ XDG_ICON_DIRECTORIES = [join(USER_HOME,'.icons/')] \
 XDG_THEME_DIRECTORIES = [join(USER_HOME,'.themes/')] \
  + [join(d, 'themes/') for d in XDG_DATA_DIRECTORIES]
 
-<<<<<<< HEAD
 XDG_HOME_TRASH_DIRECTORIES = [join(d, '.Trash/') for d in XDG_DATA_HOME if isdir(join(d, '.Trash/'))] \
-=======
+
 XDG_AUTOSTART_DIRECTORIES = [join(d, 'autostart/') for d in XDG_CONFIGURATION_DIRECTORIES if isdir(join(d, 'autostart/'))]
 
 XDG_TRASH_DIRECTORY = [join(d, '.Trash/') for d in XDG_DATA_HOME if isdir(join(d, '.Trash/'))] \
->>>>>>> [Unstable] Sync
  + [join(d, 'share/Trash/') for d in XDG_DATA_HOME if isdir(join(d, 'share/Trash/'))]
 
 
