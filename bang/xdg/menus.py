@@ -77,7 +77,7 @@ class Evaluator(object):
             while self.node.parent != None:
                 self.node = self.node.parent
         #print(self.stack, self.node, self.node.conditions, [c.conditions for c in self.node.children])
-            
+
     def eval(self, app):
         return self.node.eval(app) if self.node != None else False
 
@@ -319,19 +319,16 @@ class Menu(SubMenu):
                         self.p = p.join(menu.file_info.path_name, self.f)    
                 elif self.attrib == 'parent':
                     for d in self.merge_directories:
-<<<<<<< HEAD
                         if d != menu.file_info.path_name and p.isfile(p.join(d, self.f)):
                             self.p = p.join(d, self.f)
                 if p.isfile(self.p):
                     self.m.parse(self.p, False)
                     menu.submenus = menu.submenus + self.m.submenus
-=======
                         if d != menu.file_info.path_name and os.path.isfile(os.path.join(d, self.f)):
                             self.p = os.path.join(d, self.f)
                 if os.path.isfile(self.p):
                     self.m.parse(self.p)
                     menu.submenus = menu.submenus + self.m.as_submenu(menu.name, menu)
->>>>>>> [Unstable] Sync
             elif self.tag == 'MergeDir':
                 self.d = self.xml.get_text(element)
                 if not p.isdir(self.d):

@@ -71,9 +71,21 @@ class DesktopEntry(object):
     def get_as(self, key, T):
         return self.section.get_as(key, T)
 
+    def __str__(self):
+        return '{} {}'.format(self.name, self.file_info.name)
+
+class Exe(object)
+    def __init__(self, entry):
+        self.desktop_entry = entry
+
+    @classmethod
+    def path(self, path):
+        self.desktop_entry = DesktopEntry(path)
+
     def execute(self, params = [ ]):
+        self.de = self.desktop_entry
         try:
-            self.cmd = strip(self.app_exec) #'strip' defined below the class
+            self.cmd = strip(self.de.app_exec) #'strip' defined below the class
             self.cmd = self.cmd + ' ' + ' '.join(params)
             self.cmd = self.cmd.strip()
             self.pid = exe.Popen(self.cmd)
@@ -86,10 +98,7 @@ class DesktopEntry(object):
                 self.pid = exe.Popen(self.cmd)
                 return self.pid
             except:
-                return (self.pid, self.name, self.file_info.name, self.cmd)
-
-    def __str__(self):
-        return '{} {}'.format(self.name, self.file_info.name)
+                return (self.pid, self.de.name, self.de.file_info.name, self.cmd)
 
 def strip(args):
     args = args.split()
